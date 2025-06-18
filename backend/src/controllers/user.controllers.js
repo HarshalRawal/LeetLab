@@ -6,6 +6,7 @@ import { generateRandomTokens } from "../utils/tokenGenerator.js";
 import { generateAccessToken,generateRefreshToken } from "../utils/tokenGenerator.js";
 import bcrypt from "bcryptjs"
 import dotenv from "dotenv"
+import jwt from "jsonwebtoken"
 dotenv.config()
 const  signup = asyncHandler(async(req,res)=>{
     const {username,email,password,firstName,lastName} = req.body;
@@ -98,8 +99,13 @@ const signIn = asyncHandler(async(req,res)=>{
         throw new ApiError(500,"Failed to generate refresh token");
     }
 
+    //console.log(`Refresh Token ${refreshToken}`)
     user.refreshToken = refreshToken;
-
+    await prisma.user.update({where:{
+        id:user.id
+    },data:{
+        refreshToken:refreshToken
+    }})
     res.cookie("accessToken",accessToken,{
       httpOnly:true,
     })
@@ -157,4 +163,30 @@ const signIn = asyncHandler(async(req,res)=>{
      res.clearCookie("refreshToken");
      return res.status(200).json(new ApiResponse(200,"user logged out successfully"));
  })
-export {signup,signIn,getProfile,logOut}
+ const refreshAccessToken = asyncHandler(async(req,res)=>{
+    const refreshToken = req.cookies?.refreshToken;
+
+    const decodedRefreshToken = jwt.verify(refreshToken,process.env.REFRESH_TOKEN_SECRET);
+
+    const user = await prisma.user.findUnique({where:{id:decodedRefreshToken.id}});
+
+    if(!user){
+        throw new ApiError(404,`User with id: ${user.id} does not exists`);
+    }
+    console.log(`RefreshToken from db : ${user.refreshToken}`);
+    console.log(`RefreshToken from cookie : ${refreshToken}`)
+    if(user.refreshToken!= refreshToken){
+        throw new ApiError(400,`Refresh Token did not match. Please Login again`);
+    }
+    const newAccessToken = await generateAccessToken(user.id);
+    const newRefreshToken = await generateRefreshToken(user.id);
+    user.refreshToken = newRefreshToken;
+    res.cookie("accessToken",newAccessToken,{
+        httpOnly:true
+    })
+    res.cookie("refreshToken",newRefreshToken,{
+        httpOnly:true
+    })
+    return res.status(200).json(new ApiResponse(200,"Access token and refresh token is refreshed successfully"))
+ })
+export {signup,signIn,getProfile,logOut,refreshAccessToken}

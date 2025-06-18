@@ -14,7 +14,7 @@ const verifyJwt = asyncHandler(async (req,res,next)=>{
     next();
 })
 
-const checkAdmin = asyncHandler(async(req,res)=>{
+const checkAdmin = asyncHandler(async(req,res,next)=>{
     const userid = req.user.id;
     const user = await prisma.user.findUnique({
         where:{

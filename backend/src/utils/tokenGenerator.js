@@ -34,7 +34,7 @@ export const generateRefreshToken = async(id)=>{
         },process.env.REFRESH_TOKEN_SECRET,{
             expiresIn:process.env.REFRESH_TOKEN_EXPIRY
         })
-        return refreshToken
+        return refreshToken;
     } catch (error) {
         console.log("Error generating refresh token");
         return null;
