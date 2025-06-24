@@ -145,7 +145,7 @@ export const run = asyncHandler(async (req, res) => {
       averageMemory = Math.round(totalMemory / testcaseResults.length).toString();
     }
   
-    console.log(`SOURCE CODE : ${sourceCode}`)
+   // console.log(`SOURCE CODE : ${sourceCode}`)
     const newSubmission = await prisma.submissions.create({
       data: { 
         userId,

@@ -42,6 +42,12 @@ model User {
   Problems Problem[]
   solvedProblem SolvedProblem[]
   submissions Submissions[]
+  playList   Playlist[]
+  solutions   Solution[]
+  comments    Comment[]
+  likesDislike  LikeDislike[]
+  Votes         Vote[]
+  views         SolutionView[]
 }
 
 model Problem {
@@ -68,19 +74,90 @@ model Problem {
   user User  @relation(fields: [userId],references: [id],onDelete: Cascade)
   solvedBy SolvedProblem[]
   submissions Submissions[]
-
+  problemInPlaylist ProblemInPlaylist[]
+  solutions   Solution[]
 } 
 
+model Solution{
+  id   String  @id @default(uuid())
+  title  String
+  content Json 
+  problemId String
+  userId    String
+  upvotes   Int   @default(0)
+  downvotes Int   @default(0)
+  viewCount  Int   @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  problem   Problem @relation(fields: [problemId],references: [id],onDelete: Cascade)
+  user      User    @relation(fields: [userId],references: [id],onDelete: Cascade)
+  view      SolutionView[]
+  comments   Comment[]
+  votes      Vote[]
+}
+model SolutionView {
+  id         String   @id @default(uuid())
+  solutionId String
+  userId     String
+
+  solution   Solution @relation(fields: [solutionId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([solutionId, userId]) // Prevent duplicate views per user per solution
+}
+
+
+model Comment{
+  id      String  @id @default(uuid())
+  solutionId  String 
+  content     String
+  like        Int   @default(0)
+  dislike     Int  @default(0)
+  parentCommentId  String?
+  userId        String
+  createdAt     DateTime  @default(now())
+  solution      Solution  @relation(fields: [solutionId],references: [id],onDelete: Cascade)
+  user          User   @relation(fields: [userId],references: [id],onDelete: Cascade)
+  likeDislike   LikeDislike[]
+  parentComment  Comment? @relation("commentReplies",fields: [parentCommentId],references: [id],onDelete: Cascade)
+  replies       Comment[] @relation("commentReplies")
+}
+model Vote {
+  id         String   @id @default(uuid())
+  solutionId String
+  userId     String
+  type       VoteType
+
+  solution   Solution @relation(fields: [solutionId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([solutionId, userId]) 
+}
+
+enum VoteType {
+  UPVOTE
+  DOWNVOTE
+}
+model LikeDislike{
+  id   String  @id  @default(uuid())
+  type  LikeDislikeType
+  userId String
+  commentId String
+  user      User  @relation(fields: [userId],references: [id],onDelete: Cascade)
+  comment  Comment @relation(fields: [commentId],references: [id],onDelete: Cascade)
+  @@unique([userId,commentId])
+}
+enum LikeDislikeType {
+  LIKE
+  DISLIKE
+}
 model SolvedProblem{
   id String @id @default(uuid())
   userId String
   problemId String
-
   user User @relation(fields: [userId],references: [id])
   problem Problem @relation(fields: [problemId],references: [id])
-
   @@unique([userId, problemId])
-
 }
 
 model Submissions {
@@ -119,6 +196,28 @@ model Testcases{
   updatedAt DateTime @updatedAt
   submission Submissions @relation(fields: [submissionId],references: [id],onDelete: Cascade)
   @@index([submissionId])
+}
+
+model Playlist {
+  id  String @id @default(uuid())
+  name String
+  description String?
+  userId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId],references: [id])
+  problems  ProblemInPlaylist[]
+}
+
+model ProblemInPlaylist {
+  id  String @id @default(uuid())
+  playlistId  String
+  problemId   String
+
+  problem    Problem @relation(fields: [problemId],references: [id],onDelete: Cascade)
+  playList   Playlist @relation(fields: [playlistId],references: [id],onDelete: Cascade)
+
+  @@unique([playlistId,problemId])
 }
 
 

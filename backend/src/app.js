@@ -5,6 +5,9 @@ import authRoutes from "./routes/auth.routes.js";
 import { errorHandler } from "./middlewares/error.middlerware.js";
 import problemRoutes from "./routes/problem.routes.js";
 import executeRoutes from "./routes/execute.routes.js";
+import submissionRoutes from "./routes/submission.routes.js";
+import playlistRoutes from "./routes/playlist.routes.js";
+import solutionRoutes from "./routes/solution.routes.js";
 import morgan from "morgan"
 const app = express();
 app.use(cors({
@@ -20,5 +23,8 @@ app.use(cookieParser());
 app.use("/api/v1/auth/", authRoutes);
 app.use("/api/v1/problems",problemRoutes);
 app.use("/api/v1/execute",executeRoutes);
+app.use("/api/v1/submissions",submissionRoutes);
+app.use("/api/v1/playlist",playlistRoutes);
+app.use("/api/v1/soultion",solutionRoutes);
 app.use(errorHandler);
 export default app;
