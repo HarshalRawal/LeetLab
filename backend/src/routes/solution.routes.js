@@ -11,10 +11,4 @@ solutionRoutes.get("/solution/:solutionId",verifyJwt,getSolution);
 solutionRoutes.patch("/update/:solutionId",verifyJwt,updateSolution);
 solutionRoutes.post("/vote/:solutionId",verifyJwt,vote);
 solutionRoutes.delete("/delete/:solutionId",deleteSolution);
-
-
-
-
-
-
 export default solutionRoutes

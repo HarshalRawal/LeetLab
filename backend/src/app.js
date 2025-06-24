@@ -8,6 +8,7 @@ import executeRoutes from "./routes/execute.routes.js";
 import submissionRoutes from "./routes/submission.routes.js";
 import playlistRoutes from "./routes/playlist.routes.js";
 import solutionRoutes from "./routes/solution.routes.js";
+import commentRoutes from "./routes/comment.routes.js";
 import morgan from "morgan"
 const app = express();
 app.use(cors({
@@ -26,5 +27,6 @@ app.use("/api/v1/execute",executeRoutes);
 app.use("/api/v1/submissions",submissionRoutes);
 app.use("/api/v1/playlist",playlistRoutes);
 app.use("/api/v1/soultion",solutionRoutes);
+app.use("/api/v1/comment",commentRoutes)
 app.use(errorHandler);
 export default app;
