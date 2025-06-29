@@ -1,0 +1,105 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+/* Custom animations and utilities */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 20px rgba(34, 211, 238, 0.4);
+  }
+  to {
+    box-shadow: 0 0 30px rgba(34, 211, 238, 0.8);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgb(30 41 59);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(71 85 105);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(100 116 139);
+}
+
+/* Mobile touch improvements */
+@media (max-width: 768px) {
+  .btn {
+    min-height: 3rem;
+  }
+
+  .input {
+    min-height: 3rem;
+  }
+}
+
+/* DaisyUI theme customization */
+[data-theme="dark"] {
+  --primary: #06b6d4;
+  --secondary: #a855f7;
+  --accent: #eab308;
+  --neutral: #1f2937;
+  --base-100: #0f172a;
+  --base-200: #1e293b;
+  --base-300: #334155;
+  --info: #06b6d4;
+  --success: #10b981;
+  --warning: #eab308;
+  --error: #ef4444;
+}
+
+/* Enhanced focus states */
+.input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.2);
+}
+
+/* Button hover effects */
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+/* Card hover effects */
+.card:hover {
+  transform: translateY(-2px);
+}
+
+/* Gradient text utilities */
+.text-gradient-cyan-purple {
+  background: linear-gradient(to right, #06b6d4, #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-rainbow {
+  background: linear-gradient(to right, #06b6d4, #a855f7, #eab308);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

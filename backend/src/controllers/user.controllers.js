@@ -73,6 +73,7 @@ const signIn = asyncHandler(async(req,res)=>{
             ]
         },
         select:{
+            role:true,
             password:true,
             email:true,
             username:true,
@@ -114,6 +115,11 @@ const signIn = asyncHandler(async(req,res)=>{
         httpOnly:true,
       })
     return res.status(200).json(new ApiResponse(200,"User signed in sucessfully",{
+        user :{
+            id : user.id,
+            username:user.username,
+            role:user.role
+        },
         refreshToken:refreshToken,
         accessToken:accessToken
     }))
@@ -187,6 +193,24 @@ const signIn = asyncHandler(async(req,res)=>{
     res.cookie("refreshToken",newRefreshToken,{
         httpOnly:true
     })
-    return res.status(200).json(new ApiResponse(200,"Access token and refresh token is refreshed successfully"))
+    return res.status(200).json(new ApiResponse(200,"Access token and refresh token is refreshed successfully",{
+        userId:user.id
+    }))
  })
-export {signup,signIn,getProfile,logOut,refreshAccessToken}
+
+ const check = asyncHandler(async(req,res)=>{
+    const user = await prisma.user.findUnique({
+        where:{
+            id:req.user.id
+        },
+        select:{
+            id:true,
+            role:true,
+            username:true
+        }
+    })
+    return res.status(200).json(new ApiResponse(200,`User Authenticated Successfully`,{
+        user
+    }))
+ })
+export {signup,signIn,getProfile,logOut,refreshAccessToken,check}

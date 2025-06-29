@@ -12,11 +12,12 @@ import commentRoutes from "./routes/comment.routes.js";
 import morgan from "morgan"
 const app = express();
 app.use(cors({
-    origin:`${process.env.BASE_URL}`,
-    credentials:true,
-    allowedHeaders:["Content-Type","Authorization","Accept"],
-    methods:["POST","GET","PATCH","DELETE","PUT"]
-}))
+    origin: [process.env.BASE_URL, "http://localhost:5173"],
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization", "Accept"],
+    methods: ["POST", "GET", "PATCH", "DELETE", "PUT"]
+  }))
+  
 app.use(express.json());
 app.use(morgan("dev"))
 app.use(express.urlencoded({ extended: true }));
