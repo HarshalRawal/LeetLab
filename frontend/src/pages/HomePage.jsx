@@ -6,7 +6,6 @@ import { Loader, Code, Trophy, Target, TrendingUp, Users, Star, ArrowRight, Play
 import ProblemTable from "../components/Problem/ProblemTable"
 import { motion, AnimatePresence } from "motion/react"
 import { Link } from "react-router-dom"
-
 const HomePage = () => {
   const { authUser } = useAuthStore()
 
