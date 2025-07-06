@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import AnimatedBackground from "../components/AnimatedBackground"
 import InteractiveRobot from "../components/InteractiveRobot"

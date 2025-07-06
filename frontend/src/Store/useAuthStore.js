@@ -1,28 +1,25 @@
 import { create} from "zustand";
 import { axiosInstance } from "../libs/axios";
 import { toast } from "react-toastify";
+import { handleApiError } from "../libs/handleApiError";
 export const useAuthStore = create((set)=>({
     authUser:null,
     isSigninUp:false,
     isLoggingIn:false,  
-    isCheckingAuth:false,
+    isCheckingAuth:true,
 
-    checkAuth : async()=>{
+    checkAuth: async () => {
         try {
-            set({isCheckingAuth:true})
-            const {data} = await axiosInstance.get("/auth/check");
-            set({authUser : data.data.user})
-            toast.success(data.message)
+          set({ isCheckingAuth: true })
+          const { data } = await axiosInstance.get("/auth/check")
+          set({ authUser: data.data.user })
         } catch (error) {
-            console.log("Error checking auth: ",error)
-          //  const errorMessage = error?.response?.data?.message|| "SomeThing Went Wrong !!!!!"
-            //toast.error(errorMessage)
-            set({authUser:null})
+           handleApiError(error);
+          set({ authUser: null })
+        } finally {
+          set({ isCheckingAuth: false })
         }
-        finally {
-            set({isCheckingAuth:false})
-        }
-    },
+      },
      signup : async(data)=>{
         try {
             set({isSigninUp:true})

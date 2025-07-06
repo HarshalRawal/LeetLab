@@ -22,7 +22,11 @@ enum difficultyLevel {
   MEDIUM
   HARD
 }
-
+enum language {
+  JAVASCRIPT
+  JAVA
+  PYTHON
+}
 model User {
   id        String   @id @default(uuid())
   firstName String
@@ -156,6 +160,8 @@ model SolvedProblem{
   id String @id @default(uuid())
   userId String
   problemId String
+  solutionCode Json
+  language     String
   user User @relation(fields: [userId],references: [id])
   problem Problem @relation(fields: [problemId],references: [id])
   @@unique([userId, problemId])
@@ -222,3 +228,59 @@ model ProblemInPlaylist {
 }
 
 
+// {
+//     "statusCode": 200,
+//     "message": "Successfully found problem with id: 6dfb4fc8-6cbd-41ed-8d15-be59dd7abb3e",
+//     "data": {
+//         "problem": {
+//             "id": "6dfb4fc8-6cbd-41ed-8d15-be59dd7abb3e",
+//             "title": "Add Two Numbers",
+//             "description": "onujmlksdcion",
+//             "difficulty": "MEDIUM",
+//             "tags": [
+//                 "Maths"
+//             ],
+//             "userId": "d8d81178-736d-4282-b1f2-b33aef5bb8f6",
+//             "examples": [
+//                 {
+//                     "input": "3 7",
+//                     "output": "10",
+//                     "explanation": "adding 3 and 7 gives 10"
+//                 }
+//             ],
+//             "constraints": "-10^9 < a , b < 10^9",
+//             "hints": null,
+//             "editorial": null,
+//             "expectedTimeComplexity": "0(1)",
+//             "maxInputSize": 1000000000,
+//             "expectedTimeLimit": 10,
+//             "expectedMemoryLimit": 256000,
+//             "testcases": [
+//                 {
+//                     "input": "100 200",
+//                     "output": "300"
+//                 },
+//                 {
+//                     "input": "100 400",
+//                     "output": "300"
+//                 }
+//             ],
+//             "codeSnippets": {
+//                 "JAVA": "import java.util.Scanner;\n\npublic class Main {\n\n    public static int addTwoNumbers(int a, int b) {\n        // Write your code here\n        // Return the sum of a and b\n        return a + b;\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int a = sc.nextInt();\n        int b = sc.nextInt();\n        System.out.println(addTwoNumbers(a, b));\n    }\n}\n",
+//                 "PYTHON": "def add_two_numbers(a, b):\n    # Write your code here\n    # Return the sum of a and b\n    return a + b\n\nimport sys\ninput_line = sys.stdin.read()\na, b = map(int, input_line.split())\nprint(add_two_numbers(a, b))\n",
+//                 "JAVASCRIPT": "const fs = require('fs');\n\nfunction addTwoNumbers(a, b) {\n    // Write your code here\n    // Return the sum of a and b\n    return a + b;\n}\n\nconst input = fs.readFileSync(0, 'utf-8').trim();\nconst [a, b] = input.split(' ').map(Number);\nconsole.log(addTwoNumbers(a, b));\n"
+//             },
+//             "referenceSolutions": {
+//                 "JAVA": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int a = sc.nextInt();\n        int b = sc.nextInt();\n        System.out.println(a + b);\n    }\n}\n",
+//                 "PYTHON": "import sys\ninput_line = sys.stdin.read()\na, b = map(int, input_line.split())\nprint(a + b)\n",
+//                 "JAVASCRIPT": "const fs = require('fs');\n\nconst input = fs.readFileSync(0, 'utf-8').trim();\nconst [a, b] = input.split(' ').map(Number);\nconsole.log(a + b);\n"
+//             },
+//             "createdAt": "2025-07-03T15:24:45.142Z",
+//             "updatedAt": "2025-07-03T15:24:45.142Z",
+//             "_count": {
+//                 "submissions": 0
+//             }
+//         }
+//     },
+//     "success": true
+// } from this data i want to display title,description,tags,constraint,examples,and testcases that will be displayed will be the examples and the code-editor will display the code snippet if the problem is not solved by the user and if it is solved it will display the 

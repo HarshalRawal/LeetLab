@@ -7,8 +7,9 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useAuthStore } from "../../Store/useAuthStore";
-
+import { useNavigate } from "react-router-dom";
 export function LoginForm() {
+  const navigate  = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const { login, isLoggingIn } = useAuthStore();
 
@@ -28,6 +29,7 @@ export function LoginForm() {
     try {
       console.log(JSON.stringify(data));
       await login(data);
+      navigate("/");
     } catch (error) {
       console.error("Login error:", error);
     }

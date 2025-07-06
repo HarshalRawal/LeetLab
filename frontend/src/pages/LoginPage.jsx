@@ -1,11 +1,8 @@
-"use client"
-
 import { LoginHeader } from "../components/loginPage/login-header.jsx"
 import { LoginForm } from "../components/loginPage/login-form.jsx"
 import { SocialLogin } from "../components/loginPage/social-login.jsx"
 import { CodingBackground } from "../components/loginPage/coding-background.jsx"
 import { motion } from "motion/react"
-
 export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-base-300 via-base-200 to-base-300 flex items-center justify-center p-4 relative overflow-hidden">

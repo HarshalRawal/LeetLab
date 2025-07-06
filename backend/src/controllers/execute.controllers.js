@@ -64,24 +64,24 @@ export const run = asyncHandler(async (req, res) => {
     const submissionResults = await submitBatch(submissions);
     const tokens = submissionResults.map((obj) => obj.token);
     const results = await pollBatchResults(tokens);
-  
-    for (let i = 0; i < results.length; i++) {
-      const result = results[i];
+    const resultsWithExpectedOutput = results.map((result, index) => ({
+      ...result,
+      expected_output: submissions[index].expected_output
+    }));
+    
+    for (let i = 0; i < resultsWithExpectedOutput.length; i++) {
+      const result = resultsWithExpectedOutput[i];
       console.log(`Result for example ${i + 1}: ${JSON.stringify(result, null, 2)}`);
-      if (result.status.id !== 3) {
-        throw new ApiError(400, `Example ${i + 1} failed for language ${language}`);
-      }
     }
-  
     return res.status(200).json(
-      new ApiResponse(200, `Successfully ran code for all examples`, { results })
+      new ApiResponse(200, `Successfully ran code for all examples`, { results:resultsWithExpectedOutput })
     );
   });
 
 
   export const submit = asyncHandler(async (req, res) => {
     const { languageId, problemId, sourceCode } = req.body;
-    const userId = req.user.id; // assuming auth middleware sets this
+    const userId = req.user.id;
   
     const problem = await prisma.problem.findUnique({
       where: { id: problemId },
@@ -100,7 +100,6 @@ export const run = asyncHandler(async (req, res) => {
   
     const language = getJudge0LanguageFromId(languageId);
   
-    // Construct example & testcase submissions
     const exampleSubmissions = problem.examples.map(({ input, output }) => ({
       source_code: sourceCode,
       language_id: languageId,
@@ -121,37 +120,60 @@ export const run = asyncHandler(async (req, res) => {
   
     const allSubmissions = [...exampleSubmissions, ...testcaseSubmissions];
   
-    // Submit all to Judge0
     const submissionResults = await submitBatch(allSubmissions);
     const tokens = submissionResults.map((item) => item.token);
     const results = await pollBatchResults(tokens);
   
-    // Check examples (first N results)
-    const exampleResults = results.slice(0, exampleSubmissions.length);
-    const exampleAllPassed = exampleResults.every((r) => r.status.id === 3);
+    // Example Results
+    const exampleResultsRaw = results.slice(0, exampleSubmissions.length);
+    const exampleResults = exampleResultsRaw.map((r, index) => ({
+      testCase: index + 1,
+      passed: r.status.id === 3,
+      stdout: r.stdout || '',
+      expectedOutput: problem.examples[index].output,
+      stderr: r.stderr || '',
+      compileOutput: r.compile_output || '',
+      status: r.status.description,
+      memory: r.memory?.toString() || '',
+      time: r.time?.toString() || '',
+    }));
   
-    // Testcase results (stored in DB)
-    const testcaseResults = results.slice(exampleSubmissions.length);
-    const testcasesPassed = testcaseResults.every((r) => r.status.id === 3);
+    const exampleAllPassed = exampleResults.every((r) => r.passed);
   
-    // Create submission entry regardless of pass/fail
-
+    // Testcase Results
+    const testcaseResultsRaw = results.slice(exampleSubmissions.length);
+    const testcaseResults = testcaseResultsRaw.map((r, index) => ({
+      testCase: index + 1,
+      passed: r.status.id === 3,
+      stdout: r.stdout || '',
+      expectedOutput: problem.testcases[index].output,
+      stderr: r.stderr || '',
+      compileOutput: r.compile_output || '',
+      status: r.status.description,
+      memory: r.memory?.toString() || '',
+      time: r.time?.toString() || '',
+    }));
+  
+    const testcasesPassed = testcaseResults.every((r) => r.passed);
+  
+    // Average time and memory if passed
     let averageTime = '';
     let averageMemory = '';
+  
     if (testcasesPassed) {
-      const totalTime = testcaseResults.reduce((sum, r) => sum + (parseFloat(r.time) || 0), 0);
-      const totalMemory = testcaseResults.reduce((sum, r) => sum + (parseInt(r.memory) || 0), 0);
-      averageTime = (totalTime / testcaseResults.length).toFixed(3);
-      averageMemory = Math.round(totalMemory / testcaseResults.length).toString();
+      const totalTime = testcaseResultsRaw.reduce((sum, r) => sum + (parseFloat(r.time) || 0), 0);
+      const totalMemory = testcaseResultsRaw.reduce((sum, r) => sum + (parseInt(r.memory) || 0), 0);
+      averageTime = (totalTime / testcaseResultsRaw.length).toFixed(3);
+      averageMemory = Math.round(totalMemory / testcaseResultsRaw.length).toString();
     }
   
-   // console.log(`SOURCE CODE : ${sourceCode}`)
+    // Create submission record
     const newSubmission = await prisma.submissions.create({
-      data: { 
+      data: {
         userId,
         problemId,
         sourcCode: {
-          code :sourceCode
+          code: sourceCode,
         },
         language,
         stdin: null,
@@ -164,47 +186,39 @@ export const run = asyncHandler(async (req, res) => {
       },
     });
   
-    
-    const testcasesToCreate = testcaseResults.map((result, index) => ({
+    const testcasesToCreate = testcaseResults.map((result) => ({
       submissionId: newSubmission.id,
-      testCase: index + 1,
-      passed: result.status.id === 3,
-      stdout: result.stdout || '',
-      expectedOutput: problem.testcases[index].output,
-      stderr: result.stderr || '',
-      compileOutput: result.compile_output || '',
-      status: result.status.description,
-      memory: result.memory?.toString() || '',
-      time: result.time?.toString() || '',
+      testCase: result.testCase,
+      passed: result.passed,
+      stdout: result.stdout,
+      expectedOutput: result.expectedOutput,
+      stderr: result.stderr,
+      compileOutput: result.compileOutput,
+      status: result.status,
+      memory: result.memory,
+      time: result.time,
     }));
   
     await prisma.testcases.createMany({ data: testcasesToCreate });
   
-    // If all testcases passed, mark as solved
     if (testcasesPassed) {
       await prisma.solvedProblem.upsert({
         where: {
-          userId_problemId: {
-            userId,
-            problemId,
-          },
+          userId_problemId: { userId, problemId },
         },
         update: {},
-        create: {
-          userId,
-          problemId,
-        },
+        create: { userId, problemId },
       });
     }
   
     return res.status(200).json(
       new ApiResponse(200, `Submission processed`, {
         submissionId: newSubmission.id,
-        newSubmission:newSubmission,
-        examplePassed: exampleAllPassed,
-        exampleResults:exampleResults,
-        testcasesPassed,
+        newSubmission,
+        exampleResults,
+        exampleAllPassed,
         testcaseResults,
+        testcasesPassed,
       })
     );
   });

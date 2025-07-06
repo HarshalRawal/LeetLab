@@ -208,7 +208,7 @@ export const deleteComment = asyncHandler(async(req,res)=>{
     }))
 })
 
-export const likeDislikeComment = asyncHandler(async (req, res) => {
+export const likeDislikeComment = asyncHandler(async (req, res) => {  
     const { commentId } = req.params;
     const { type } = req.body;
     const userId = req.user.id;
